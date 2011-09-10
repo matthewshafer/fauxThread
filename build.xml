@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="fauxThreads" default="all">
+
+<target name="cleanUp">
+	<delete dir="build" />
+</target>
+
+<target name="prepare">
+	<echo msg="Making ./build Director" />
+	<mkdir dir="build" />
+	<mkdir dir="build/reports"/>
+</target>
+
+<target name="lint">
+	<copy todir="build/lint">
+		<fileset dir=".">
+			<include name="**/*.php"/>
+			<exclude name="build/"/>
+		</fileset>
+	</copy>
+	
+	<phplint deprecatedAsError="true" tofile="build/reports/badLint.txt">
+		<fileset dir="build/lint">
+			<include name="**/*.php"/>
+		</fileset>
+	</phplint>
+		
+	<delete dir="build/lint" />
+</target>
+
+<target name="cpd">
+
+	<copy todir="build/phpCPD">
+		<fileset dir=".">
+			<include name="**/*.php"/>
+			<exclude name="build/"/>
+		</fileset>
+	</copy>
+	
+	<phpcpd>
+		<fileset dir="build/phpCPD">
+			<include name="**/*.php"/>
+		</fileset>
+		
+		<formatter type="pmd" outfile="build/reports/phpCPD.txt"/>
+	</phpcpd>
+	
+	
+	<delete dir="build/phpCPD" />
+</target>
+
+<target name="pmd">
+
+	<copy todir="build/pmd">
+		<fileset dir=".">
+			<include name="**/*.php"/>
+			<exclude name="build/"/>
+		</fileset>
+	</copy>
+	
+	<phpmd file="build/pmd" rulesets="codesize,unusedcode,design,naming">
+		<formatter type="html" outfile="build/reports/pmd.html"/>
+	</phpmd>
+	
+	
+	<delete dir="build/pmd" />
+</target>
+
+<target name="documentation">
+	<copy todir="build/docSourceCode">
+		<fileset dir=".">
+			<include name="**/*.php"/>
+			<exclude name="build/"/>
+			<exclude name="tests/"/>
+		</fileset>
+	</copy>
+	
+	<phpdoc title="fauxThreads Documentation" destdir="build/documentation" sourcecode="false" undocumentedelements="true" output="HTML:Smarty:PHP">
+		<fileset dir="build/docSourceCode">
+  			<include name="**/*.php" />
+			</fileset>
+			
+			<projdocfileset dir="build/docSourceCode">
+  			<include name="README.txt" />
+			</projdocfileset>
+	</phpdoc>
+	
+	<delete dir="build/docSourceCode" />
+</target>
+
+
+<target name="all" depends="cleanUp, prepare, lint, cpd, pmd, documentation" />
+
+</project>
