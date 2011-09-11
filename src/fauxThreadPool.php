@@ -5,12 +5,13 @@ class fauxThreadPool
 {
 	private $numThreads;
 	private $currentRunningThreads;
-	private $taskQueue = array();
+	private $taskQueue;
 	
 	public function __construct($maxThreads = 2)
 	{
 		$this->numThreads = $maxThreads;
 		$this->currentRunningThreads = 0;
+		$this->taskQueue = new SplQueue();
 		
 		if(!$this->havePcntlFork())
 		{
@@ -47,29 +48,37 @@ class fauxThreadPool
 	
 	private function checkQueue()
 	{
-		if($this->currentRunningThreads < $this->numThreads && isset($this->taskQueue[0]))
+		if($this->currentRunningThreads < $this->numThreads)
 		{
-			// need to write a fifo queue sometime because as this is now its filo
-			$task = array_pop($this->taskQueue);
-			// the @ stops it from throwing an exception when unable to fork
-			$pid = @pcntl_fork();
-			
-			if($pid === -1)
+			try
 			{
-				throw new Exception("Unable to fork");
-			}
-			
-			// where all of the fun happens
-			if($pid !== 0)
-			{
-				// we are the parent
-				$this->currentRunningThreads++;
-			}
-			else
-			{
-				// we are the child
+				// need to write a fifo queue sometime because as this is now its filo
+				$task = $this->taskQueue->dequeue();
+				// the @ stops it from throwing an exception when unable to fork
+				$pid = @pcntl_fork();
 				
-				$task->run();
+				if($pid === -1)
+				{
+					throw new Exception("Unable to fork");
+				}
+				
+				// where all of the fun happens
+				if($pid !== 0)
+				{
+					// we are the parent
+					$this->currentRunningThreads++;
+				}
+				else
+				{
+					// we are the child
+					
+					$task->run();
+				}
+			}
+			catch(RuntimeException $e)
+			{
+				// this exception gets thrown when we attempt to dequeue when there is nothing
+				// in the queue.  no need to do anything when we catch the exception
 			}
 		}
 	}
@@ -82,7 +91,7 @@ class fauxThreadPool
 			throw new Exception("not instance of fauxThreadRunner");
 		}
 		
-		array_push($this->taskQueue, $object);
+		$this->taskQueue->enqueue($object);
 		
 		$this->checkQueue();
 	}

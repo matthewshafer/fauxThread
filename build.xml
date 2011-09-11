@@ -73,6 +73,7 @@
 			<include name="**/*.php"/>
 			<exclude name="build/"/>
 			<exclude name="tests/"/>
+			<exclude name="example/"/>
 		</fileset>
 	</copy>
 	
