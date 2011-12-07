@@ -35,7 +35,7 @@ class fauxThreadPool
 	
 	public function taskComplete()
 	{
-		echo "child exited\n";
+		//echo "child exited\n";
 		
 		// used to wait for children to finish
 		while(pcntl_waitpid(-1, $status, WNOHANG) > 0)
