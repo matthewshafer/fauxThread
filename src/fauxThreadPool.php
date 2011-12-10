@@ -6,6 +6,7 @@ class fauxThreadPool
 	private $numThreads;
 	private $currentRunningThreads;
 	private $taskQueue;
+	private $isParent = true;
 	
 	public function __construct($maxThreads = 2)
 	{
@@ -66,12 +67,12 @@ class fauxThreadPool
 				if($pid !== 0)
 				{
 					// we are the parent
-					$this->currentRunningThreads++;
+					++$this->currentRunningThreads;
 				}
 				else
 				{
 					// we are the child
-					
+					$this->isParent = false;
 					$task->run();
 				}
 			}
@@ -106,6 +107,11 @@ class fauxThreadPool
 		}
 		
 		return $return;
+	}
+	
+	public function isParent()
+	{
+		return $this->isParent;
 	}
 }
 ?>
