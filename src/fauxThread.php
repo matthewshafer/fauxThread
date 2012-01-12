@@ -1,10 +1,24 @@
 <?php
 
+/**
+ * fauxThread class.
+ * 
+ * Handles the creating of a fauxThread
+ * @author Matthew Shafer <matt@niftystopwatch.com>
+*/
 class fauxThread
 {
 	private $object;
 	private $pid;
 	
+	/**
+	 * __construct function.
+	 * 
+	 * Constructs for a fauxThread object
+	 * @access public
+	 * @param object $object
+	 * @return void
+	*/
 	public function __construct($object)
 	{
 		// not sure if we need the is_object part
@@ -15,12 +29,20 @@ class fauxThread
 		
 		$this->object = $object;
 		
+		// checks to see if we have pcntl_fork installed in php
 		if(!$this->havePcntlFork())
 		{
 			throw new Exception("no pcntl fork");
 		}
 	}
 	
+	/**
+	 * havePcntlFork function.
+	 * 
+	 * checks to see if pcntl_fork exists on the machine
+	 * @access private
+	 * @return boolean True if pcntl_fork exists false if it does not
+	*/
 	private function havePcntlFork()
 	{
 		$return = false;
@@ -33,6 +55,13 @@ class fauxThread
 		return $return;
 	}
 	
+	/**
+	 * start function.
+	 * 
+	 * forks php and then runs the object that is supposed to be run in the fork
+	 * @access public
+	 * @return void
+	*/
 	public function start()
 	{
 		// the @ stops it from throwing an exception when unable to fork
@@ -59,6 +88,13 @@ class fauxThread
 		}
 	}
 	
+	/**
+	 * getPid function.
+	 * 
+	 * gets the pid of the child process
+	 * @access public
+	 * @return int pid of child process
+	*/
 	public function getPid()
 	{
 		return $this->pid;
